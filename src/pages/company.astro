@@ -1,0 +1,82 @@
+---
+import '../styles/global.css';
+import { urlFor } from '../lib/sanity/image';
+import { getCompanyInfo } from '../lib/sanity/queries';
+
+const company = await getCompanyInfo();
+---
+
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>企業情報</title>
+	</head>
+	<body>
+		<main class="mx-auto max-w-2xl p-8">
+			<h1 class="text-2xl font-bold mb-6">企業情報</h1>
+			{
+				company ? (
+					<div class="space-y-4">
+						{company.logo && (
+							<img src={urlFor(company.logo).width(200).url()} alt={company.name ?? ''} />
+						)}
+						<h2 class="text-xl font-semibold">{company.name}</h2>
+						{company.description && <p>{company.description}</p>}
+						<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+							{company.representative && (
+								<>
+									<dt class="font-semibold">代表者</dt>
+									<dd>{company.representative}</dd>
+								</>
+							)}
+							{company.establishedDate && (
+								<>
+									<dt class="font-semibold">設立日</dt>
+									<dd>{new Date(company.establishedDate).toLocaleDateString('ja-JP')}</dd>
+								</>
+							)}
+							{company.capital && (
+								<>
+									<dt class="font-semibold">資本金</dt>
+									<dd>{company.capital}</dd>
+								</>
+							)}
+							{company.address && (
+								<>
+									<dt class="font-semibold">所在地</dt>
+									<dd>{company.address}</dd>
+								</>
+							)}
+							{company.phone && (
+								<>
+									<dt class="font-semibold">電話番号</dt>
+									<dd>{company.phone}</dd>
+								</>
+							)}
+							{company.email && (
+								<>
+									<dt class="font-semibold">メール</dt>
+									<dd>{company.email}</dd>
+								</>
+							)}
+							{company.website && (
+								<>
+									<dt class="font-semibold">Webサイト</dt>
+									<dd>
+										<a href={company.website} class="underline">
+											{company.website}
+										</a>
+									</dd>
+								</>
+							)}
+						</dl>
+					</div>
+				) : (
+					<p>企業情報はまだ登録されていません。Studioから「企業情報」を追加してください。</p>
+				)
+			}
+			<a href="/" class="mt-8 inline-block underline">トップへ戻る</a>
+		</main>
+	</body>
+</html>

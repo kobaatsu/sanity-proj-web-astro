@@ -1,0 +1,51 @@
+---
+import '../../styles/global.css';
+import { PortableText } from 'astro-portabletext';
+import { sanityClient } from 'sanity:client';
+import { urlFor } from '../../lib/sanity/image';
+import { getNewsBySlug, NEWS_SLUGS_QUERY } from '../../lib/sanity/queries';
+
+export async function getStaticPaths() {
+	return await sanityClient.fetch(NEWS_SLUGS_QUERY);
+}
+
+const { slug } = Astro.params;
+const item = await getNewsBySlug(slug!);
+---
+
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>{item?.title ?? 'お知らせが見つかりません'}</title>
+	</head>
+	<body>
+		<main class="mx-auto max-w-2xl p-8">
+			{
+				item ? (
+					<>
+						<p class="text-sm text-gray-500">
+							{item.publishedAt && new Date(item.publishedAt).toLocaleDateString('ja-JP')}
+						</p>
+						<h1 class="text-2xl font-bold mb-4">{item.title}</h1>
+						{item.mainImage && (
+							<img
+								src={urlFor(item.mainImage).width(800).url()}
+								alt={item.title ?? ''}
+								class="mb-6"
+							/>
+						)}
+						{item.body && (
+							<div class="prose">
+								<PortableText value={item.body} />
+							</div>
+						)}
+					</>
+				) : (
+					<p>お知らせが見つかりません。</p>
+				)
+			}
+			<a href="/news" class="mt-8 inline-block underline">お知らせ一覧へ戻る</a>
+		</main>
+	</body>
+</html>

@@ -2,6 +2,7 @@
 import '../styles/global.css'
 import {urlFor} from '../lib/sanity/image'
 import {getCompanyInfo} from '../lib/sanity/queries'
+import {withBase} from '../lib/url'
 
 const company = await getCompanyInfo()
 ---
@@ -74,7 +75,7 @@ const company = await getCompanyInfo()
       ) : (
         <p>企業情報はまだ登録されていません。Studioから「企業情報」を追加してください。</p>
       )}
-      <a href="/" class="mt-8 inline-block underline">
+      <a href={withBase('/')} class="mt-8 inline-block underline">
         トップへ戻る
       </a>
     </main>

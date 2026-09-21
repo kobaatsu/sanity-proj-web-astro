@@ -12,8 +12,15 @@ const {PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET} = loadEnv(
   '',
 )
 
+// GitHub Pages (Project Pages) はサブパス配信になるため、CI上のビルドでのみ base を付与する。
+// ローカルの dev/build/preview は従来通りルート ("/") のままにし、開発体験に影響を与えない。
+const isCI = process.env.CI === 'true'
+
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://kobaatsu.github.io',
+  ...(isCI && {base: '/sanity-proj-web-astro'}),
+
   vite: {
     plugins: [tailwindcss()],
   },

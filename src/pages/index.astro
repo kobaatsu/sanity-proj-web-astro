@@ -2,6 +2,7 @@
 import '../styles/global.css'
 // Component Imports
 import Button from '../components/Button.astro'
+import {withBase} from '../lib/url'
 
 // Full Astro Component Syntax:
 // https://docs.astro.build/basics/astro-components/
@@ -11,8 +12,8 @@ import Button from '../components/Button.astro'
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <link rel="icon" href={withBase('/favicon.ico')} />
     <meta name="generator" content={Astro.generator} />
     <title>Astro + TailwindCSS</title>
   </head>
@@ -20,13 +21,13 @@ import Button from '../components/Button.astro'
   <body>
     <div class="grid place-items-center h-screen content-center">
       <Button>Tailwind Button in Astro!</Button>
-      <a href="/markdown-page" class="p-4 underline">
+      <a href={withBase('/markdown-page')} class="p-4 underline">
         Markdown is also supported...
       </a>
-      <a href="/news" class="p-4 underline">
+      <a href={withBase('/news')} class="p-4 underline">
         お知らせ
       </a>
-      <a href="/company" class="p-4 underline">
+      <a href={withBase('/company')} class="p-4 underline">
         企業情報
       </a>
     </div>

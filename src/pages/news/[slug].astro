@@ -4,6 +4,7 @@ import {PortableText} from 'astro-portabletext'
 import {sanityClient} from 'sanity:client'
 import {urlFor} from '../../lib/sanity/image'
 import {getNewsBySlug, NEWS_SLUGS_QUERY} from '../../lib/sanity/queries'
+import {withBase} from '../../lib/url'
 
 export async function getStaticPaths() {
   return await sanityClient.fetch(NEWS_SLUGS_QUERY)
@@ -43,7 +44,7 @@ const item = await getNewsBySlug(slug!)
       ) : (
         <p>お知らせが見つかりません。</p>
       )}
-      <a href="/news" class="mt-8 inline-block underline">
+      <a href={withBase('/news')} class="mt-8 inline-block underline">
         お知らせ一覧へ戻る
       </a>
     </main>

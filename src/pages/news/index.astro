@@ -3,13 +3,6 @@ import '../../styles/global.css';
 import { getNewsList } from '../../lib/sanity/queries';
 
 const news = await getNewsList();
-
-const categoryLabels: Record<string, string> = {
-	general: 'お知らせ',
-	press: 'プレスリリース',
-	event: 'イベント',
-	product: '製品情報',
-};
 ---
 
 <html lang="ja">
@@ -31,7 +24,7 @@ const categoryLabels: Record<string, string> = {
 								<a href={`/news/${item.slug?.current}`} class="block">
 									<p class="text-sm text-gray-500">
 										{item.publishedAt && new Date(item.publishedAt).toLocaleDateString('ja-JP')}
-										{item.category && ` ・ ${categoryLabels[item.category] ?? item.category}`}
+										{item.category?.title && ` ・ ${item.category.title}`}
 									</p>
 									<h2 class="text-lg font-semibold underline">{item.title}</h2>
 									{item.excerpt && <p class="text-gray-700">{item.excerpt}</p>}

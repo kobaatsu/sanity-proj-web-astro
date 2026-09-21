@@ -62,6 +62,13 @@ export type SanityImageHotspot = {
   width?: number;
 };
 
+export type NewsCategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "newsCategory";
+};
+
 export type News = {
   _id: string;
   _type: "news";
@@ -71,7 +78,7 @@ export type News = {
   title?: string;
   slug?: Slug;
   publishedAt?: string;
-  category?: "general" | "press" | "event" | "product";
+  category?: NewsCategoryReference;
   excerpt?: string;
   mainImage?: {
     asset?: SanityImageAssetReference;
@@ -98,6 +105,17 @@ export type News = {
     _type: "block";
     _key: string;
   }>;
+};
+
+export type NewsCategory = {
+  _id: string;
+  _type: "newsCategory";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  slug?: Slug;
+  order?: number;
 };
 
 export type Slug = {
@@ -208,7 +226,9 @@ export type AllSanitySchemaTypes =
   | CompanyInfo
   | SanityImageCrop
   | SanityImageHotspot
+  | NewsCategoryReference
   | News
+  | NewsCategory
   | Slug
   | SanityImagePaletteSwatch
   | SanityImagePalette
@@ -221,24 +241,30 @@ export type AllSanitySchemaTypes =
 
 // Source: ../web/src/lib/sanity/queries.ts
 // Variable: NEWS_LIST_QUERY
-// Query: *[_type == "news" && defined(slug.current)] | order(publishedAt desc){    _id, title, slug, publishedAt, category, excerpt  }
+// Query: *[_type == "news" && defined(slug.current)] | order(publishedAt desc){    _id, title, slug, publishedAt, "category": category->{title, slug}, excerpt  }
 export type NEWS_LIST_QUERY_RESULT = Array<{
   _id: string;
   title: string | null;
   slug: Slug | null;
   publishedAt: string | null;
-  category: "event" | "general" | "press" | "product" | null;
+  category: {
+    title: string | null;
+    slug: Slug | null;
+  } | null;
   excerpt: string | null;
 }>;
 
 // Source: ../web/src/lib/sanity/queries.ts
 // Variable: NEWS_BY_SLUG_QUERY
-// Query: *[_type == "news" && slug.current == $slug][0]{    _id, title, publishedAt, category, mainImage, body  }
+// Query: *[_type == "news" && slug.current == $slug][0]{    _id, title, publishedAt, "category": category->{title, slug}, mainImage, body  }
 export type NEWS_BY_SLUG_QUERY_RESULT = {
   _id: string;
   title: string | null;
   publishedAt: string | null;
-  category: "event" | "general" | "press" | "product" | null;
+  category: {
+    title: string | null;
+    slug: Slug | null;
+  } | null;
   mainImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -305,8 +331,8 @@ export type COMPANY_INFO_QUERY_RESULT = {
 // Query TypeMap
 declare global {
   interface SanityQueries {
-    '*[_type == "news" && defined(slug.current)] | order(publishedAt desc){\n    _id, title, slug, publishedAt, category, excerpt\n  }': NEWS_LIST_QUERY_RESULT;
-    '*[_type == "news" && slug.current == $slug][0]{\n    _id, title, publishedAt, category, mainImage, body\n  }': NEWS_BY_SLUG_QUERY_RESULT;
+    '*[_type == "news" && defined(slug.current)] | order(publishedAt desc){\n    _id, title, slug, publishedAt, "category": category->{title, slug}, excerpt\n  }': NEWS_LIST_QUERY_RESULT;
+    '*[_type == "news" && slug.current == $slug][0]{\n    _id, title, publishedAt, "category": category->{title, slug}, mainImage, body\n  }': NEWS_BY_SLUG_QUERY_RESULT;
     '*[_type == "news" && defined(slug.current)]{ "params": { "slug": slug.current } }': NEWS_SLUGS_QUERY_RESULT;
     '*[_type == "companyInfo"][0]': COMPANY_INFO_QUERY_RESULT;
   }

@@ -3,13 +3,13 @@ import { sanityClient } from 'sanity:client';
 
 export const NEWS_LIST_QUERY = defineQuery(
 	`*[_type == "news" && defined(slug.current)] | order(publishedAt desc){
-    _id, title, slug, publishedAt, category, excerpt
+    _id, title, slug, publishedAt, "category": category->{title, slug}, excerpt
   }`,
 );
 
 export const NEWS_BY_SLUG_QUERY = defineQuery(
 	`*[_type == "news" && slug.current == $slug][0]{
-    _id, title, publishedAt, category, mainImage, body
+    _id, title, publishedAt, "category": category->{title, slug}, mainImage, body
   }`,
 );
 

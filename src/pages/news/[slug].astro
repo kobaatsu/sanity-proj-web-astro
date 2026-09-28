@@ -10,6 +10,8 @@ export async function getStaticPaths() {
   return await sanityClient.fetch(NEWS_SLUGS_QUERY)
 }
 
+const BODY_IMAGE_WIDTH = 800
+
 const {slug} = Astro.params
 const item = await getNewsBySlug(slug!)
 ---
@@ -37,7 +39,23 @@ const item = await getNewsBySlug(slug!)
           )}
           {item.body && (
             <div class="prose">
-              <PortableText value={item.body} />
+              {item.body.map((section) =>
+                section._type === 'richText'
+                  ? section.content && <PortableText value={section.content} />
+                  : section.asset && (
+                      <img
+                        src={urlFor(section).width(BODY_IMAGE_WIDTH).url()}
+                        alt={section.omitAlt ? '' : (section.alt ?? '')}
+                        width={BODY_IMAGE_WIDTH}
+                        height={
+                          section.aspectRatio
+                            ? Math.round(BODY_IMAGE_WIDTH / section.aspectRatio)
+                            : undefined
+                        }
+                        loading="lazy"
+                      />
+                    ),
+              )}
             </div>
           )}
         </>

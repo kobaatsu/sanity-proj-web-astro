@@ -85,6 +85,8 @@ export type News = {
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
+    omitAlt?: boolean;
+    alt?: string;
     _type: "image";
   };
   body?: Array<{
@@ -221,23 +223,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes =
-  | SanityImageAssetReference
-  | CompanyInfo
-  | SanityImageCrop
-  | SanityImageHotspot
-  | NewsCategoryReference
-  | News
-  | NewsCategory
-  | Slug
-  | SanityImagePaletteSwatch
-  | SanityImagePalette
-  | SanityImageDimensions
-  | SanityImageMetadata
-  | SanityFileAsset
-  | SanityAssetSourceData
-  | SanityImageAsset
-  | Geopoint;
+export type AllSanitySchemaTypes = SanityImageAssetReference | CompanyInfo | SanityImageCrop | SanityImageHotspot | NewsCategoryReference | News | NewsCategory | Slug | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 
 // Source: ../web/src/lib/sanity/queries.ts
 // Variable: NEWS_LIST_QUERY
@@ -270,6 +256,8 @@ export type NEWS_BY_SLUG_QUERY_RESULT = {
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
+    omitAlt?: boolean;
+    alt?: string;
     _type: "image";
   } | null;
   body: Array<{
@@ -331,13 +319,14 @@ export type COMPANY_INFO_QUERY_RESULT = {
 // Query TypeMap
 declare global {
   interface SanityQueries {
-    '*[_type == "news" && defined(slug.current)] | order(publishedAt desc){\n    _id, title, slug, publishedAt, "category": category->{title, slug}, excerpt\n  }': NEWS_LIST_QUERY_RESULT;
-    '*[_type == "news" && slug.current == $slug][0]{\n    _id, title, publishedAt, "category": category->{title, slug}, mainImage, body\n  }': NEWS_BY_SLUG_QUERY_RESULT;
-    '*[_type == "news" && defined(slug.current)]{ "params": { "slug": slug.current } }': NEWS_SLUGS_QUERY_RESULT;
-    '*[_type == "companyInfo"][0]': COMPANY_INFO_QUERY_RESULT;
+    "*[_type == \"news\" && defined(slug.current)] | order(publishedAt desc){\n    _id, title, slug, publishedAt, \"category\": category->{title, slug}, excerpt\n  }": NEWS_LIST_QUERY_RESULT;
+    "*[_type == \"news\" && slug.current == $slug][0]{\n    _id, title, publishedAt, \"category\": category->{title, slug}, mainImage, body\n  }": NEWS_BY_SLUG_QUERY_RESULT;
+    "*[_type == \"news\" && defined(slug.current)]{ \"params\": { \"slug\": slug.current } }": NEWS_SLUGS_QUERY_RESULT;
+    "*[_type == \"companyInfo\"][0]": COMPANY_INFO_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too
 declare module "@sanity/client" {
   interface SanityQueries extends globalThis.SanityQueries {}
 }
+

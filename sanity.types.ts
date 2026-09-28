@@ -255,7 +255,7 @@ export type NEWS_LIST_QUERY_RESULT = Array<{
 
 // Source: ../web/src/lib/sanity/queries.ts
 // Variable: NEWS_BY_SLUG_QUERY
-// Query: *[_type == "news" && slug.current == $slug][0]{    _id, title, publishedAt, "category": category->{title, slug}, mainImage,    "body": select(      // 旧形式（Portable Text 配列）のままのドキュメントは、ひとつのリッチテキストセクションとして扱う      body[0]._type == "block" => [{"_type": "richText", "_key": "legacy", "content": body}],      body[]{..., _type == "bodyImage" => {"aspectRatio": asset->metadata.dimensions.aspectRatio}}    )  }
+// Query: *[_type == "news" && slug.current == $slug][0]{    _id, title, publishedAt, "category": category->{title, slug}, mainImage,    "body": body[]{..., _type == "bodyImage" => {"aspectRatio": asset->metadata.dimensions.aspectRatio}}  }
 export type NEWS_BY_SLUG_QUERY_RESULT = {
   _id: string;
   title: string | null;
@@ -347,7 +347,7 @@ export type COMPANY_INFO_QUERY_RESULT = {
 declare global {
   interface SanityQueries {
     "*[_type == \"news\" && defined(slug.current)] | order(publishedAt desc){\n    _id, title, slug, publishedAt, \"category\": category->{title, slug}, excerpt\n  }": NEWS_LIST_QUERY_RESULT;
-    "*[_type == \"news\" && slug.current == $slug][0]{\n    _id, title, publishedAt, \"category\": category->{title, slug}, mainImage,\n    \"body\": select(\n      // \u65E7\u5F62\u5F0F\uFF08Portable Text \u914D\u5217\uFF09\u306E\u307E\u307E\u306E\u30C9\u30AD\u30E5\u30E1\u30F3\u30C8\u306F\u3001\u3072\u3068\u3064\u306E\u30EA\u30C3\u30C1\u30C6\u30AD\u30B9\u30C8\u30BB\u30AF\u30B7\u30E7\u30F3\u3068\u3057\u3066\u6271\u3046\n      body[0]._type == \"block\" => [{\"_type\": \"richText\", \"_key\": \"legacy\", \"content\": body}],\n      body[]{..., _type == \"bodyImage\" => {\"aspectRatio\": asset->metadata.dimensions.aspectRatio}}\n    )\n  }": NEWS_BY_SLUG_QUERY_RESULT;
+    "*[_type == \"news\" && slug.current == $slug][0]{\n    _id, title, publishedAt, \"category\": category->{title, slug}, mainImage,\n    \"body\": body[]{..., _type == \"bodyImage\" => {\"aspectRatio\": asset->metadata.dimensions.aspectRatio}}\n  }": NEWS_BY_SLUG_QUERY_RESULT;
     "*[_type == \"news\" && defined(slug.current)]{ \"params\": { \"slug\": slug.current } }": NEWS_SLUGS_QUERY_RESULT;
     "*[_type == \"companyInfo\"][0]": COMPANY_INFO_QUERY_RESULT;
   }

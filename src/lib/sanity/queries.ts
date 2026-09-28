@@ -10,11 +10,7 @@ export const NEWS_LIST_QUERY = defineQuery(
 export const NEWS_BY_SLUG_QUERY = defineQuery(
   `*[_type == "news" && slug.current == $slug][0]{
     _id, title, publishedAt, "category": category->{title, slug}, mainImage,
-    "body": select(
-      // 旧形式（Portable Text 配列）のままのドキュメントは、ひとつのリッチテキストセクションとして扱う
-      body[0]._type == "block" => [{"_type": "richText", "_key": "legacy", "content": body}],
-      body[]{..., _type == "bodyImage" => {"aspectRatio": asset->metadata.dimensions.aspectRatio}}
-    )
+    "body": body[]{..., _type == "bodyImage" => {"aspectRatio": asset->metadata.dimensions.aspectRatio}}
   }`,
 )
 

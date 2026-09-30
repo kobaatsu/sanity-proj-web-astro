@@ -18,6 +18,23 @@ export const NEWS_SLUGS_QUERY = defineQuery(
   `*[_type == "news" && defined(slug.current)]{ "params": { "slug": slug.current } }`,
 )
 
+/**
+ * お知らせの全文検索（ブラウザから Content Lake へ直接問い合わせる用）。
+ * タイトル > 概要 > 本文の順に重み付けしてスコア順に返す。
+ */
+export const NEWS_SEARCH_QUERY = defineQuery(
+  `*[_type == "news" && defined(slug.current)
+    && [title, excerpt, pt::text(body[_type == "richText"].content[])] match text::query($term)]
+    | score(
+      boost(title match text::query($term), 3),
+      boost(excerpt match text::query($term), 2),
+      body[].content[].children[].text match text::query($term)
+    )
+    | order(_score desc, publishedAt desc)[0...20]{
+      _id, title, slug, excerpt
+    }`,
+)
+
 export const COMPANY_INFO_QUERY = defineQuery(`*[_type == "companyInfo"][0]`)
 
 export async function getNewsList() {
@@ -30,4 +47,11 @@ export async function getNewsBySlug(slug: string) {
 
 export async function getCompanyInfo() {
   return await sanityClient.fetch(COMPANY_INFO_QUERY)
+}
+
+/** ブラウザから呼ぶ前提のため、CDN 経由・公開済みドキュメントのみで検索する */
+export async function searchNews(term: string) {
+  return await sanityClient
+    .withConfig({useCdn: true, perspective: 'published'})
+    .fetch(NEWS_SEARCH_QUERY, {term})
 }

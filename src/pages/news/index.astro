@@ -1,5 +1,6 @@
 ---
 import '../../styles/global.css'
+import NewsSearch from '../../components/NewsSearch.astro'
 import {getNewsList} from '../../lib/sanity/queries'
 import {withBase} from '../../lib/url'
 
@@ -15,6 +16,19 @@ const news = await getNewsList()
   <body>
     <main class="mx-auto max-w-2xl p-8">
       <h1 class="text-2xl font-bold mb-6">お知らせ</h1>
+      {/* 全文検索の方式比較用（実験）。A: ビルド時インデックス / B: Sanity へ直接問い合わせ */}
+      <div class="mb-8 grid gap-4 md:grid-cols-2">
+        <NewsSearch
+          engine="pagefind"
+          label="A. Pagefind 検索"
+          description="ビルド時に生成した静的インデックスをブラウザで検索"
+        />
+        <NewsSearch
+          engine="sanity"
+          label="B. Sanity 直接検索"
+          description="ブラウザから Content Lake に GROQ で問い合わせ"
+        />
+      </div>
       {news.length === 0 ? (
         <p>お知らせはまだありません。</p>
       ) : (

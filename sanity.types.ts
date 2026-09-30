@@ -317,6 +317,16 @@ export type NEWS_SLUGS_QUERY_RESULT = Array<{
 }>;
 
 // Source: ../web/src/lib/sanity/queries.ts
+// Variable: NEWS_SEARCH_QUERY
+// Query: *[_type == "news" && defined(slug.current)    && [title, excerpt, pt::text(body[_type == "richText"].content[])] match text::query($term)]    | score(      boost(title match text::query($term), 3),      boost(excerpt match text::query($term), 2),      body[].content[].children[].text match text::query($term)    )    | order(_score desc, publishedAt desc)[0...20]{      _id, title, slug, excerpt    }
+export type NEWS_SEARCH_QUERY_RESULT = Array<{
+  _id: string;
+  title: string | null;
+  slug: Slug | null;
+  excerpt: string | null;
+}>;
+
+// Source: ../web/src/lib/sanity/queries.ts
 // Variable: COMPANY_INFO_QUERY
 // Query: *[_type == "companyInfo"][0]
 export type COMPANY_INFO_QUERY_RESULT = {
@@ -349,6 +359,7 @@ declare global {
     "*[_type == \"news\" && defined(slug.current)] | order(publishedAt desc){\n    _id, title, slug, publishedAt, \"category\": category->{title, slug}, excerpt\n  }": NEWS_LIST_QUERY_RESULT;
     "*[_type == \"news\" && slug.current == $slug][0]{\n    _id, title, publishedAt, \"category\": category->{title, slug}, mainImage,\n    \"body\": body[]{..., _type == \"bodyImage\" => {\"aspectRatio\": asset->metadata.dimensions.aspectRatio}}\n  }": NEWS_BY_SLUG_QUERY_RESULT;
     "*[_type == \"news\" && defined(slug.current)]{ \"params\": { \"slug\": slug.current } }": NEWS_SLUGS_QUERY_RESULT;
+    "*[_type == \"news\" && defined(slug.current)\n    && [title, excerpt, pt::text(body[_type == \"richText\"].content[])] match text::query($term)]\n    | score(\n      boost(title match text::query($term), 3),\n      boost(excerpt match text::query($term), 2),\n      body[].content[].children[].text match text::query($term)\n    )\n    | order(_score desc, publishedAt desc)[0...20]{\n      _id, title, slug, excerpt\n    }": NEWS_SEARCH_QUERY_RESULT;
     "*[_type == \"companyInfo\"][0]": COMPANY_INFO_QUERY_RESULT;
   }
 }

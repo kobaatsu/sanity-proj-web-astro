@@ -1,0 +1,136 @@
+---
+import type {NewsSearchEngine} from '../lib/search/types'
+
+interface Props {
+  engine: NewsSearchEngine
+  label: string
+  description: string
+}
+
+const {engine, label, description} = Astro.props
+const inputId = `news-search-${engine}`
+---
+
+<section data-news-search={engine} class="rounded border border-gray-300 p-4">
+  <label for={inputId} class="block font-semibold">
+    {label}
+  </label>
+  <p class="mb-2 text-sm text-gray-500">{description}</p>
+  <input
+    id={inputId}
+    type="search"
+    autocomplete="off"
+    placeholder="キーワードを入力"
+    class="w-full rounded border border-gray-400 px-3 py-2"
+    data-news-search-input
+  />
+  <p class="mt-2 text-sm text-gray-500" aria-live="polite" data-news-search-status></p>
+  <ul class="mt-2 space-y-3" data-news-search-results></ul>
+</section>
+
+<script>
+  import {isNewsSearchEngine, type NewsSearchEngine, type NewsSearchHit} from '../lib/search/types'
+
+  const DEBOUNCE_MS = 300
+
+  /** 検索エンジンごとの実装は、使われたときに初めて読み込む */
+  async function runSearch(engine: NewsSearchEngine, term: string): Promise<NewsSearchHit[]> {
+    if (engine === 'pagefind') {
+      const {searchByPagefind} = await import('../lib/search/pagefind')
+      return await searchByPagefind(term)
+    }
+    const {searchBySanity} = await import('../lib/search/sanity')
+    return await searchBySanity(term)
+  }
+
+  /**
+   * Pagefind の抜粋 HTML から、テキストと <mark> 以外を取り除いた DOM を組み立てる。
+   * innerHTML へ直接代入せず、想定外のタグや属性が入り込まないようにする。
+   */
+  function buildExcerpt(excerpt: string, isHtml: boolean): DocumentFragment {
+    const fragment = document.createDocumentFragment()
+    if (!isHtml) {
+      fragment.append(excerpt)
+      return fragment
+    }
+    const parsed = new DOMParser().parseFromString(excerpt, 'text/html')
+    for (const node of parsed.body.childNodes) {
+      if (node instanceof HTMLElement && node.tagName === 'MARK') {
+        const mark = document.createElement('mark')
+        mark.textContent = node.textContent
+        fragment.append(mark)
+      } else {
+        fragment.append(node.textContent ?? '')
+      }
+    }
+    return fragment
+  }
+
+  function renderHits(list: HTMLElement, hits: NewsSearchHit[]) {
+    list.replaceChildren(
+      ...hits.map((hit) => {
+        const li = document.createElement('li')
+        const a = document.createElement('a')
+        a.href = hit.url
+        a.className = 'font-semibold underline'
+        a.textContent = hit.title
+        li.append(a)
+        if (hit.excerpt) {
+          const p = document.createElement('p')
+          p.className = 'text-sm text-gray-700'
+          p.append(buildExcerpt(hit.excerpt, hit.excerptIsHtml))
+          li.append(p)
+        }
+        return li
+      }),
+    )
+  }
+
+  function setup(root: HTMLElement) {
+    const engine = root.dataset.newsSearch
+    const input = root.querySelector<HTMLInputElement>('[data-news-search-input]')
+    const status = root.querySelector<HTMLElement>('[data-news-search-status]')
+    const list = root.querySelector<HTMLElement>('[data-news-search-results]')
+    if (!isNewsSearchEngine(engine) || !input || !status || !list) return
+
+    let timer: ReturnType<typeof setTimeout> | undefined
+    // 入力が続いた場合に、古い検索結果で新しい結果を上書きしないための連番
+    let latestRequest = 0
+
+    async function search(term: string) {
+      if (!isNewsSearchEngine(engine) || !status || !list) return
+      const requestId = ++latestRequest
+      status.textContent = '検索中…'
+      const startedAt = performance.now()
+      try {
+        const hits = await runSearch(engine, term)
+        if (requestId !== latestRequest) return
+        const elapsed = Math.round(performance.now() - startedAt)
+        status.textContent = `${hits.length}件（${elapsed}ms）`
+        renderHits(list, hits)
+      } catch (error) {
+        if (requestId !== latestRequest) return
+        console.error(`[news-search:${engine}]`, error)
+        status.textContent =
+          engine === 'pagefind'
+            ? '検索インデックスを読み込めませんでした（dev サーバーでは利用できません。build + preview で確認してください）'
+            : '検索に失敗しました'
+        list.replaceChildren()
+      }
+    }
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer)
+      const term = input.value.trim()
+      if (!term) {
+        latestRequest++
+        status.textContent = ''
+        list.replaceChildren()
+        return
+      }
+      timer = setTimeout(() => void search(term), DEBOUNCE_MS)
+    })
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-news-search]').forEach(setup)
+</script>

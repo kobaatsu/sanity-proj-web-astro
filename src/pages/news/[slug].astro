@@ -25,8 +25,8 @@ const item = await getNewsBySlug(slug!)
   <body>
     <main class="mx-auto max-w-2xl p-8">
       {item ? (
-        <>
-          <p class="text-sm text-gray-500">
+        <article data-pagefind-body>
+          <p class="text-sm text-gray-500" data-pagefind-ignore>
             {item.publishedAt && new Date(item.publishedAt).toLocaleDateString('ja-JP')}
           </p>
           <h1 class="text-2xl font-bold mb-4">{item.title}</h1>
@@ -58,7 +58,7 @@ const item = await getNewsBySlug(slug!)
               )}
             </div>
           )}
-        </>
+        </article>
       ) : (
         <p>お知らせが見つかりません。</p>
       )}
